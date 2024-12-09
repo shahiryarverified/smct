@@ -79,39 +79,39 @@
       }
 
       .top-container button:first-child {
-        background-image: url("Home1.jpeg");
+        background-image: url("Home1.png");
       }
 
       .top-container button:first-child:hover {
-        background-image: url("Home2.jpeg");
+        background-image: url("Home2.png");
       }
 
       .top-container button:first-child:active {
-        background-image: url("Home3.jpeg");
+        background-image: url("Home3.png");
       }
 
       .top-container button:last-child {
-        background-image: url("Twitter1.jpeg");
+        background-image: url("Twitter1.png");
       }
 
       .top-container button:last-child:hover {
-        background-image: url("Twitter2.jpeg");
+        background-image: url("Twitter2.png");
       }
 
       .top-container button:last-child:active {
-        background-image: url("Twitter3.jpeg");
+        background-image: url("Twitter3.png");
       }
 
       .bottom-container button {
-        background-image: url("Spin1.jpeg");
+        background-image: url("Spin1.png");
       }
 
       .bottom-container button:hover {
-        background-image: url("Spin2.jpeg");
+        background-image: url("Spin2.png");
       }
 
       .bottom-container button:active {
-        background-image: url("Spin3.jpeg");
+        background-image: url("Spin3.png");
       }
 
       button:hover {
@@ -163,9 +163,9 @@
           top: 35%;
         }
         .top-container {
-          top: 200px;
+          top: 260px;
           left: 30px;
-          width: calc(100% - 190px);
+          width: calc(100% - 130px);
         }
       }
 
@@ -180,9 +180,9 @@
           max-height: 225px;
         }
         .top-container {
-          top: 220px;
-          left: 20px;
-          width: calc(100% - 180px);
+          top: 280px;
+          left: 0px;
+          width: calc(100% - 60px);
           button {
             padding: 15px 30px;
             font-size: 18px;
@@ -192,9 +192,9 @@
 
       @media (max-width: 600px) {
         .top-container {
-          top: 240px;
-          left: 15px;
-          width: calc(100% - 175px);
+          top: 330px;
+          left: -20px;
+          width: calc(100% - 20px);
           button {
             padding: 12px 24px;
             font-size: 16px;
@@ -205,7 +205,9 @@
   </head>
   <body>
     <div class="top-container">
-      <button onclick="goToHomepage()">Homepage</button>
+      <button onclick="window.location.href='https://smokincat.io'">
+        Homepage
+      </button>
       <button onclick="shareOnTwitter()">Share on Twitter</button>
     </div>
 
@@ -227,17 +229,12 @@
 
       async function generateImageList() {
         const imageCount = 46;
-        const extensions = ["jpg", "jpeg", "png"];
         const images = [];
 
         for (let i = 1; i <= imageCount; i++) {
-          for (const ext of extensions) {
-            const imagePath = `imgs/${i}.${ext}`;
-            if (await checkImageExists(imagePath)) {
-              images.push(imagePath);
-              // Break inner loop once we find the correct extension for this number
-              break;
-            }
+          const imagePath = `imgs/${i}.webp`;
+          if (await checkImageExists(imagePath)) {
+            images.push(imagePath);
           }
         }
         console.log("Found images:", images); // Debug log
@@ -289,10 +286,6 @@
 
       // Initialize images when page loads
       initializeImages();
-
-      function goToHomepage() {
-        window.location.href = "/";
-      }
 
       function shareOnTwitter() {
         const text = "Check out this awesome website!";
