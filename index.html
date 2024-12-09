@@ -265,12 +265,7 @@
       <button onclick="shareOnTwitter()">Share on Twitter</button>
     </div>
 
-    <img
-      id="centerImage"
-      alt="Loading..."
-      class="center-image"
-      style="visibility: hidden"
-    />
+    <img id="centerImage" alt="Loading..." class="center-image" />
     <div class="loader" id="imageLoader"></div>
 
     <div class="bottom-container">
@@ -306,20 +301,16 @@
 
       async function initializeImages() {
         showLoader();
-        const imageElement = document.getElementById("centerImage");
-        imageElement.style.visibility = "hidden";
-
         availableImages = await generateImageList();
         if (availableImages.length > 0) {
+          const imageElement = document.getElementById("centerImage");
           const tempImage = new Image();
           tempImage.onload = function () {
             imageElement.src = availableImages[0];
-            imageElement.style.visibility = "visible";
             hideLoader();
           };
           tempImage.onerror = function () {
             console.error("Error loading initial image");
-            imageElement.style.visibility = "hidden";
             hideLoader();
           };
           tempImage.src = availableImages[0];
@@ -356,7 +347,12 @@
       function spinImage() {
         const imageElement = document.getElementById("centerImage");
         showLoader();
-        imageElement.style.visibility = "hidden";
+
+        imageElement.onerror = function () {
+          console.error("Error loading image:", this.src);
+          this.src = getRandomImage();
+          hideLoader();
+        };
 
         setTimeout(() => {
           const newImage = getRandomImage();
@@ -365,12 +361,10 @@
           const tempImage = new Image();
           tempImage.onload = function () {
             imageElement.src = newImage;
-            imageElement.style.visibility = "visible";
             hideLoader();
           };
           tempImage.onerror = function () {
             console.error("Error loading image:", newImage);
-            imageElement.style.visibility = "hidden";
             hideLoader();
           };
           tempImage.src = newImage;
