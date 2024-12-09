@@ -201,6 +201,60 @@
           }
         }
       }
+
+      .loader {
+        position: absolute;
+        top: 18%;
+        left: 45%;
+        transform: translate(-50%, -50%);
+        width: 48px;
+        height: 48px;
+        border: 5px solid #fff;
+        border-bottom-color: transparent;
+        border-radius: 50%;
+        display: none;
+        animation: rotation 1s linear infinite;
+        z-index: 1;
+      }
+
+      @keyframes rotation {
+        0% {
+          transform: translate(-50%, -50%) rotate(0deg);
+        }
+        100% {
+          transform: translate(-50%, -50%) rotate(360deg);
+        }
+      }
+
+      @media (max-width: 1800px) {
+        .loader {
+          top: 20%;
+        }
+      }
+
+      @media (max-width: 1600px) {
+        .loader {
+          top: 22%;
+        }
+      }
+
+      @media (max-width: 1400px) {
+        .loader {
+          top: 25%;
+        }
+      }
+
+      @media (max-width: 1200px) {
+        .loader {
+          top: 30%;
+        }
+      }
+
+      @media (max-width: 1000px) {
+        .loader {
+          top: 35%;
+        }
+      }
     </style>
   </head>
   <body>
@@ -212,6 +266,7 @@
     </div>
 
     <img id="centerImage" alt="Rotating Image" class="center-image" />
+    <div class="loader" id="imageLoader"></div>
 
     <div class="bottom-container">
       <button onclick="spinImage()">Spin</button>
@@ -245,10 +300,22 @@
       let usedImages = [];
 
       async function initializeImages() {
+        showLoader();
         availableImages = await generateImageList();
-        // Set initial image
         if (availableImages.length > 0) {
-          document.getElementById("centerImage").src = availableImages[0];
+          const imageElement = document.getElementById("centerImage");
+          const tempImage = new Image();
+          tempImage.onload = function () {
+            imageElement.src = availableImages[0];
+            hideLoader();
+          };
+          tempImage.onerror = function () {
+            console.error("Error loading initial image");
+            hideLoader();
+          };
+          tempImage.src = availableImages[0];
+        } else {
+          hideLoader();
         }
       }
 
@@ -267,20 +334,40 @@
         return selectedImage;
       }
 
+      function showLoader() {
+        document.getElementById("imageLoader").style.display = "block";
+        document.getElementById("centerImage").style.opacity = "0";
+      }
+
+      function hideLoader() {
+        document.getElementById("imageLoader").style.display = "none";
+        document.getElementById("centerImage").style.opacity = "1";
+      }
+
       function spinImage() {
         const imageElement = document.getElementById("centerImage");
-        imageElement.style.opacity = "0";
+        showLoader();
 
         imageElement.onerror = function () {
           console.error("Error loading image:", this.src);
           this.src = getRandomImage();
+          hideLoader();
         };
 
         setTimeout(() => {
           const newImage = getRandomImage();
           console.log("Loading new image:", newImage);
-          imageElement.src = newImage;
-          imageElement.style.opacity = "1";
+
+          const tempImage = new Image();
+          tempImage.onload = function () {
+            imageElement.src = newImage;
+            hideLoader();
+          };
+          tempImage.onerror = function () {
+            console.error("Error loading image:", newImage);
+            hideLoader();
+          };
+          tempImage.src = newImage;
         }, 300);
       }
 
