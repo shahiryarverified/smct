@@ -8,9 +8,11 @@
       body {
         margin: 0;
         padding: 0;
-        height: 100vh;
-        background-image: url("background.jpeg");
-        background-size: 100%;
+        min-height: 100vh;
+        max-width: 1920px;
+        margin: 0 auto;
+        background-image: url("background.webp");
+        background-size: contain;
         background-position: center;
         background-repeat: no-repeat;
         display: flex;
@@ -18,10 +20,22 @@
         position: relative;
       }
 
+      html {
+        background-color: #000;
+      }
+
       .top-container {
         display: flex;
         justify-content: space-between;
         padding: 20px;
+        position: absolute;
+        top: 150px;
+        left: 50px;
+        width: calc(100% - 210px);
+      }
+
+      .top-container button:first-child {
+        margin-left: 0;
       }
 
       .bottom-container {
@@ -34,30 +48,158 @@
 
       .center-image {
         position: absolute;
-        top: 20%;
-        left: 50%;
-        transform: translateX(-50%);
-        max-width: 300px;
-        max-height: 300px;
+        top: 18%;
+        left: 45%;
+        transform: translate(-50%, -50%);
+        width: 10vw;
+        height: 10vw;
+        min-width: 80px;
+        min-height: 80px;
+        max-width: 150px;
+        max-height: 150px;
+        object-fit: contain;
+        transition: opacity 0.3s ease;
       }
 
       button {
-        padding: 15px 30px;
-        font-size: 18px;
+        padding: 20px 40px;
+        font-size: 20px;
         cursor: pointer;
-        background: linear-gradient(45deg, #ff6b6b, #ff8e53);
         border: none;
         border-radius: 8px;
         transition: all 0.3s ease;
-        color: white;
-        font-weight: bold;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-color: transparent;
+        color: transparent;
+        text-shadow: none;
+        width: 150px;
+        height: 50px;
+      }
+
+      .top-container button:first-child {
+        background-image: url("Home1.jpeg");
+      }
+
+      .top-container button:first-child:hover {
+        background-image: url("Home2.jpeg");
+      }
+
+      .top-container button:first-child:active {
+        background-image: url("Home3.jpeg");
+      }
+
+      .top-container button:last-child {
+        background-image: url("Twitter1.jpeg");
+      }
+
+      .top-container button:last-child:hover {
+        background-image: url("Twitter2.jpeg");
+      }
+
+      .top-container button:last-child:active {
+        background-image: url("Twitter3.jpeg");
+      }
+
+      .bottom-container button {
+        background-image: url("Spin1.jpeg");
+      }
+
+      .bottom-container button:hover {
+        background-image: url("Spin2.jpeg");
+      }
+
+      .bottom-container button:active {
+        background-image: url("Spin3.jpeg");
       }
 
       button:hover {
-        background: linear-gradient(45deg, #ff8e53, #ff6b6b);
-        transform: scale(1.05);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        transform: none;
+        box-shadow: none;
+      }
+
+      @media (max-width: 1800px) {
+        .center-image {
+          top: 20%;
+        }
+        .top-container {
+          top: 160px;
+        }
+      }
+
+      @media (max-width: 1600px) {
+        .center-image {
+          top: 22%;
+        }
+        .top-container {
+          top: 170px;
+        }
+      }
+
+      @media (max-width: 1400px) {
+        .center-image {
+          top: 25%;
+        }
+        .top-container {
+          top: 180px;
+          width: calc(100% - 210px);
+        }
+      }
+
+      @media (max-width: 1200px) {
+        .center-image {
+          top: 30%;
+        }
+        .top-container {
+          top: 190px;
+          left: 40px;
+          width: calc(100% - 200px);
+        }
+      }
+
+      @media (max-width: 1000px) {
+        .center-image {
+          top: 35%;
+        }
+        .top-container {
+          top: 200px;
+          left: 30px;
+          width: calc(100% - 190px);
+        }
+      }
+
+      @media (max-width: 800px) {
+        .center-image {
+          top: 35%;
+          width: 15vw;
+          height: 15vw;
+          min-width: 120px;
+          min-height: 120px;
+          max-width: 225px;
+          max-height: 225px;
+        }
+        .top-container {
+          top: 220px;
+          left: 20px;
+          width: calc(100% - 180px);
+          button {
+            padding: 15px 30px;
+            font-size: 18px;
+          }
+        }
+      }
+
+      @media (max-width: 600px) {
+        .top-container {
+          top: 240px;
+          left: 15px;
+          width: calc(100% - 175px);
+          button {
+            padding: 12px 24px;
+            font-size: 16px;
+          }
+        }
       }
     </style>
   </head>
@@ -67,37 +209,86 @@
       <button onclick="shareOnTwitter()">Share on Twitter</button>
     </div>
 
-    <img
-      id="centerImage"
-      src="image1.webp"
-      alt="Rotating Image"
-      class="center-image"
-    />
+    <img id="centerImage" alt="Rotating Image" class="center-image" />
 
     <div class="bottom-container">
       <button onclick="spinImage()">Spin</button>
     </div>
 
     <script>
-      const images = [
-        "image1.webp",
-        "image2.webp",
-        "image3.webp",
-        // Add more image paths as needed
-      ];
+      async function checkImageExists(imagePath) {
+        try {
+          const response = await fetch(imagePath);
+          return response.ok;
+        } catch {
+          return false;
+        }
+      }
 
-      let currentImageIndex = 0;
+      async function generateImageList() {
+        const imageCount = 46;
+        const extensions = ["jpg", "jpeg", "png"];
+        const images = [];
+
+        for (let i = 1; i <= imageCount; i++) {
+          for (const ext of extensions) {
+            const imagePath = `imgs/${i}.${ext}`;
+            if (await checkImageExists(imagePath)) {
+              images.push(imagePath);
+              // Break inner loop once we find the correct extension for this number
+              break;
+            }
+          }
+        }
+        console.log("Found images:", images); // Debug log
+        return images;
+      }
+
+      let availableImages = [];
+      let usedImages = [];
+
+      async function initializeImages() {
+        availableImages = await generateImageList();
+        // Set initial image
+        if (availableImages.length > 0) {
+          document.getElementById("centerImage").src = availableImages[0];
+        }
+      }
+
+      function getRandomImage() {
+        if (availableImages.length === 0) {
+          availableImages = [...usedImages];
+          usedImages = [];
+        }
+
+        const randomIndex = Math.floor(Math.random() * availableImages.length);
+        const selectedImage = availableImages[randomIndex];
+
+        availableImages.splice(randomIndex, 1);
+        usedImages.push(selectedImage);
+
+        return selectedImage;
+      }
 
       function spinImage() {
-        currentImageIndex = (currentImageIndex + 1) % images.length;
         const imageElement = document.getElementById("centerImage");
         imageElement.style.opacity = "0";
 
+        imageElement.onerror = function () {
+          console.error("Error loading image:", this.src);
+          this.src = getRandomImage();
+        };
+
         setTimeout(() => {
-          imageElement.src = images[currentImageIndex];
+          const newImage = getRandomImage();
+          console.log("Loading new image:", newImage);
+          imageElement.src = newImage;
           imageElement.style.opacity = "1";
         }, 300);
       }
+
+      // Initialize images when page loads
+      initializeImages();
 
       function goToHomepage() {
         window.location.href = "/";
