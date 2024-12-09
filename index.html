@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive Background Page</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        background-image: url("background.jpeg");
+        background-size: 100%;
+        background-position: center;
+        background-repeat: no-repeat;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+
+      .top-container {
+        display: flex;
+        justify-content: space-between;
+        padding: 20px;
+      }
+
+      .bottom-container {
+        position: absolute;
+        bottom: 40px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+
+      .center-image {
+        position: absolute;
+        top: 20%;
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: 300px;
+        max-height: 300px;
+      }
+
+      button {
+        padding: 15px 30px;
+        font-size: 18px;
+        cursor: pointer;
+        background: linear-gradient(45deg, #ff6b6b, #ff8e53);
+        border: none;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        color: white;
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      button:hover {
+        background: linear-gradient(45deg, #ff8e53, #ff6b6b);
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="top-container">
+      <button onclick="goToHomepage()">Homepage</button>
+      <button onclick="shareOnTwitter()">Share on Twitter</button>
+    </div>
+
+    <img
+      id="centerImage"
+      src="image1.webp"
+      alt="Rotating Image"
+      class="center-image"
+    />
+
+    <div class="bottom-container">
+      <button onclick="spinImage()">Spin</button>
+    </div>
+
+    <script>
+      const images = [
+        "image1.webp",
+        "image2.webp",
+        "image3.webp",
+        // Add more image paths as needed
+      ];
+
+      let currentImageIndex = 0;
+
+      function spinImage() {
+        currentImageIndex = (currentImageIndex + 1) % images.length;
+        const imageElement = document.getElementById("centerImage");
+        imageElement.style.opacity = "0";
+
+        setTimeout(() => {
+          imageElement.src = images[currentImageIndex];
+          imageElement.style.opacity = "1";
+        }, 300);
+      }
+
+      function goToHomepage() {
+        window.location.href = "/";
+      }
+
+      function shareOnTwitter() {
+        const text = "Check out this awesome website!";
+        const url = window.location.href;
+        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+          text
+        )}&url=${encodeURIComponent(url)}`;
+        window.open(twitterUrl, "_blank");
+      }
+    </script>
+  </body>
+</html>
