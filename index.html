@@ -21,7 +21,7 @@
       }
 
       html {
-        background-color: #000;
+        background-color: #fff;
       }
 
       .top-container {
@@ -255,6 +255,49 @@
           top: 35%;
         }
       }
+
+      .share-container {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-end;
+      }
+
+      .meme-input {
+        padding: 10px;
+        border-radius: 8px;
+        border: 2px solid #333;
+        background: rgba(255, 255, 255, 0.9);
+        width: 200px;
+        font-size: 16px;
+        height: 60px; /* Adjust height for textarea */
+      }
+
+      .image-text-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 20px;
+      }
+
+      .display-text {
+        margin-left: 40px; /* 40% gap */
+        font-size: 24px;
+        color: white; /* Change color as needed */
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Add shadow for visibility */
+      }
+
+      @media (max-width: 800px) {
+        .share-container {
+          align-items: center;
+        }
+        .meme-input {
+          width: 180px;
+        }
+        .display-text {
+          font-size: 20px; /* Adjust font size for smaller screens */
+        }
+      }
     </style>
   </head>
   <body>
@@ -262,10 +305,25 @@
       <button onclick="window.location.href='https://smokincat.io'">
         Homepage
       </button>
-      <button onclick="shareOnTwitter()">Share on Twitter</button>
+      <div class="share-container">
+        <textarea
+          id="memeText"
+          placeholder="Add your meme text here..."
+          class="meme-input"
+        ></textarea>
+        <button onclick="shareOnTwitter()">Share on Twitter</button>
+      </div>
     </div>
 
-    <img id="centerImage" alt="Loading..." class="center-image" />
+    <div class="image-text-container">
+      <img
+        id="centerImage"
+        alt="Loading..."
+        class="center-image"
+        loading="lazy"
+      />
+      <div id="displayText" class="display-text"></div>
+    </div>
     <div class="loader" id="imageLoader"></div>
 
     <div class="bottom-container">
@@ -300,8 +358,22 @@
       let usedImages = [];
       let preloadedImages = {}; // Cache for preloaded images
 
-      // Preload a batch of images
-      async function preloadImages(imageUrls) {
+      // Add this new function for image optimization
+      function createOptimizedImageUrl(imagePath) {
+        // Check if running on localhost
+        if (
+          window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1"
+        ) {
+          return imagePath;
+        }
+        // Add Cloudinary or similar CDN URL
+        // Example: return `https://your-cloudinary-url/${imagePath}?q=auto&w=auto`;
+        return imagePath;
+      }
+
+      // Update the preloadImages function
+      async function preloadImages(imageUrls, priority = false) {
         const promises = imageUrls.map((url) => {
           return new Promise((resolve, reject) => {
             const img = new Image();
@@ -310,34 +382,37 @@
               resolve(url);
             };
             img.onerror = () => reject(url);
-            img.src = url;
+            if (priority) {
+              img.fetchPriority = "high";
+            }
+            img.src = createOptimizedImageUrl(url);
           });
         });
 
         return Promise.allSettled(promises);
       }
 
+      // Update initializeImages function
       async function initializeImages() {
         showLoader();
         const imageElement = document.getElementById("centerImage");
         imageElement.style.visibility = "hidden";
 
-        // Generate and validate image list
         availableImages = await generateImageList();
 
         if (availableImages.length > 0) {
-          // Preload first 5 images
-          await preloadImages(availableImages.slice(0, 5));
+          // Preload first image with high priority
+          await preloadImages([availableImages[0]], true);
 
-          // Show first image immediately since it's preloaded
-          if (preloadedImages[availableImages[0]]) {
-            imageElement.src = availableImages[0];
-            imageElement.style.visibility = "visible";
-            hideLoader();
-          }
+          // Show first image
+          imageElement.src = createOptimizedImageUrl(availableImages[0]);
+          imageElement.style.visibility = "visible";
+          hideLoader();
 
-          // Preload the rest in the background
-          preloadImages(availableImages.slice(5));
+          // Preload next 3 images in background
+          requestIdleCallback(() => {
+            preloadImages(availableImages.slice(1, 4));
+          });
         } else {
           hideLoader();
         }
@@ -368,6 +443,7 @@
         document.getElementById("centerImage").style.opacity = "1";
       }
 
+      // Update spinImage function
       function spinImage() {
         const imageElement = document.getElementById("centerImage");
         showLoader();
@@ -375,50 +451,126 @@
 
         const newImage = getRandomImage();
 
-        // Use preloaded image if available
         if (preloadedImages[newImage]) {
           setTimeout(() => {
-            imageElement.src = newImage;
+            imageElement.src = createOptimizedImageUrl(newImage);
             imageElement.style.visibility = "visible";
             hideLoader();
           }, 300);
         } else {
-          // Load image if not preloaded
           const tempImage = new Image();
           tempImage.onload = function () {
             setTimeout(() => {
-              imageElement.src = newImage;
+              imageElement.src = createOptimizedImageUrl(newImage);
               imageElement.style.visibility = "visible";
               hideLoader();
-              preloadedImages[newImage] = tempImage; // Cache for future use
+              preloadedImages[newImage] = tempImage;
             }, 300);
           };
           tempImage.onerror = function () {
             console.error("Error loading image:", newImage);
             hideLoader();
           };
-          tempImage.src = newImage;
+          tempImage.src = createOptimizedImageUrl(newImage);
         }
 
-        // Preload next few images in the background
-        const remainingImages = availableImages.filter(
-          (img) => !preloadedImages[img]
-        );
-        if (remainingImages.length > 0) {
-          preloadImages(remainingImages.slice(0, 3));
-        }
+        // Preload next 2 images when browser is idle
+        requestIdleCallback(() => {
+          const unloadedImages = availableImages.filter(
+            (img) => !preloadedImages[img]
+          );
+          preloadImages(unloadedImages.slice(0, 2));
+        });
       }
 
       // Initialize images when page loads
       initializeImages();
 
-      function shareOnTwitter() {
-        const text = "Check out this awesome website!";
-        const url = window.location.href;
-        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-          text
-        )}&url=${encodeURIComponent(url)}`;
-        window.open(twitterUrl, "_blank");
+      async function shareOnTwitter() {
+        try {
+          const shareButton = document.querySelector(
+            ".top-container button:last-child"
+          );
+          shareButton.style.opacity = "0.5";
+          shareButton.disabled = true;
+
+          // Create a canvas element
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+
+          // Set canvas size to match viewport
+          canvas.width = document.body.clientWidth;
+          canvas.height = document.body.clientHeight;
+
+          // Create new image elements
+          const backgroundImg = new Image();
+          backgroundImg.crossOrigin = "anonymous"; // Enable CORS
+          const centerImg = document.getElementById("centerImage");
+
+          // Load background image
+          await new Promise((resolve, reject) => {
+            backgroundImg.onload = resolve;
+            backgroundImg.onerror = reject;
+            backgroundImg.src = getComputedStyle(document.body)
+              .backgroundImage.slice(4, -1)
+              .replace(/['"]/g, "");
+          });
+
+          // Draw background
+          ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
+
+          // Draw center image in its current position
+          const centerRect = centerImg.getBoundingClientRect();
+          ctx.drawImage(
+            centerImg,
+            centerRect.left,
+            centerRect.top,
+            centerRect.width,
+            centerRect.height
+          );
+
+          // Get meme text and draw it
+          const memeText = document.getElementById("memeText").value;
+          const textX = centerRect.right + 40; // 40px gap to the right of the image
+          const textY = centerRect.top + centerRect.height / 2; // Center vertically
+
+          if (memeText) {
+            ctx.font = "bold 24px Arial";
+            ctx.fillStyle = "white";
+            ctx.strokeStyle = "black";
+            ctx.lineWidth = 4;
+            ctx.textAlign = "left";
+            ctx.textBaseline = "middle";
+
+            // Draw text outline
+            ctx.strokeText(memeText, textX, textY);
+            ctx.fillText(memeText, textX, textY);
+          }
+
+          // Convert canvas to blob
+          const blob = await new Promise((resolve) =>
+            canvas.toBlob(resolve, "image/png")
+          );
+
+          // Create a URL for the blob
+          const url = URL.createObjectURL(blob);
+
+          // Prepare Twitter share
+          const twitterText = memeText || "Check out my awesome spin result!";
+          const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+            twitterText
+          )}&url=${encodeURIComponent(url)}`;
+          window.open(twitterUrl, "_blank");
+        } catch (error) {
+          console.error("Error creating share image:", error);
+          alert("Sorry, there was an error creating the share image.");
+        } finally {
+          const shareButton = document.querySelector(
+            ".top-container button:last-child"
+          );
+          shareButton.style.opacity = "1";
+          shareButton.disabled = false;
+        }
       }
     </script>
   </body>
